@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_inventory_report_summary_tree" model="ir.ui.view">
+        <field name="name">inventory.report.summary.tree</field>
+        <field name="model">inventory.report.summary</field>
+        <field name="arch" type="xml">
+            <tree string="Inventory Report">
+                <field name="sequence" string="SN."/>
+                <field name="part_number" string="Part Number (ID)"/>
+                <field name="description" string="Description"/>
+                <field name="uom" string="UOM"/>
+                <field name="all_received_qty" string="All Received Qty"/>
+                <field name="date_of_receipt" string="Date of Receipt"/>
+                <field name="sold_qty" string="Sold Qty"/>
+                <field name="sold_date" string="Sold Date"/>
+                <field name="remaining_qty" string="Remaining Qty"/>
+                <field name="unit_price" string="Unit Price"/>
+                <field name="unit_cost" string="Unit Cost"/>
+                <field name="abc_group" string="ABC GROUP"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_inventory_report_summary" model="ir.actions.act_window">
+        <field name="name">Inventory Report</field>
+        <field name="res_model">inventory.report.summary</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_inventory_report_summary_tree"/>
+        <field name="domain">[]</field>
+    </record>
+</odoo>
+

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="hr_dashboard.HRDashboard" owl="1">
+        <div class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
+            <!-- Fixed Header Section -->
+            <div class="flex-shrink-0 bg-light">
+                <div class="container-fluid px-2 pt-2">
+                    <div class="row m-0">
+                        <div class="col-12 px-0">
+                            <div class="shadow-sm m-1 p-1 bg-white">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <h1 class="fs-3 text-primary ms-3 mb-0">HR Dashboard</h1>
+                                    <div class="w-100 w-md-auto mt-2 mt-md-0">
+                                        <div class="d-flex flex-column flex-md-row gap-2">
+                                            <input type="date" class="form-control" t-att-value="state.start_date" t-on-change="onStartDateChange" placeholder="Start Date"/>
+                                            <input type="date" class="form-control" t-att-value="state.end_date" t-on-change="onEndDateChange" placeholder="End Date"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content Section -->
+            <div class="flex-grow-1 overflow-auto bg-light">
+                <div class="container-fluid pb-2 px-2">
+                    <!--Cards Section -->
+                    <div class="row g-2 mb-2">
+                        <DashboardCard 
+                            name="'Employee'"
+                            value="state.total_employees.value"
+                            iconClass="'fa-users'"
+                            bgColor="'#e8f5e9'"
+                            onClick="onTotalEmployeesClick"/>
+                        
+                        <DashboardCard 
+                            name="'Expiring / New Contract'"
+                            value="state.expiring_contracts.value"
+                            iconClass="'fa-file-contract'"
+                            bgColor="'#fff3e0'"
+                            onClick="onExpiringContractsClick"/>
+                        
+                        <DashboardCard 
+                            name="'Leave Request'"
+                            value="state.total_leaves.value"
+                            iconClass="'fa-calendar-times'"
+                            bgColor="'#e1f5fe'"
+                            onClick="onTotalLeavesClick"/>
+                        
+                        <DashboardCard 
+                            name="'Appraisals'"
+                            value="state.total_appraisals.value"
+                            iconClass="'fa-star'"
+                            bgColor="'#f3e5f5'"
+                            onClick="onTotalAppraisalsClick"/>
+                        
+                        <DashboardCard 
+                            name="'Recruitment'"
+                            value="state.total_recruitments.value"
+                            iconClass="'fa-user-plus'"
+                            bgColor="'#fff9c4'"
+                            onClick="onTotalRecruitmentsClick"/>
+                        
+                        <DashboardCard 
+                            name="'Resignation'"
+                            value="state.total_resignations.value"
+                            iconClass="'fa-user-minus'"
+                            bgColor="'#ffebee'"
+                            onClick="onTotalResignationsClick"/>
+                    </div>
+                    
+                    <!-- Charts Section -->
+                    <div class="row mt-3">
+                        <!-- Employee Inventory Chart - Full Width -->
+                        <div class="col-12 px-1 mb-4">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Employee Inventory</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 300px;">
+                                    <t t-if="state.inventory_chart.labels.length === 0 or state.inventory_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-bar-chart fa-3x mb-2"></i>
+                                            <div>No employee inventory data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.inventory_chart.labels.length > 0 and state.inventory_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.inventory_chart"
+                                            title="'Employee Inventory by Month'"
+                                            x_title="'Month'"
+                                            y_title="'Number of Employees'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Monthly Payroll Chart - Full Width -->
+                        <div class="col-12 px-1 mb-4">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Monthly Payroll</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 300px;">
+                                    <t t-if="state.payroll_chart.labels.length === 0 or state.payroll_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-line-chart fa-3x mb-2"></i>
+                                            <div>No payroll data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.payroll_chart.labels.length > 0 and state.payroll_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'line'"
+                                            data="state.payroll_chart"
+                                            title="'Gross Payroll by Month'"
+                                            x_title="'Month'"
+                                            y_title="'Amount'"
+                                            showNetLine="true"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Department Headcount Chart - Full Width -->
+                    <div class="row mt-3">
+                        <div class="col-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Employee Headcount By Department</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 300px;">
+                                    <t t-if="state.dept_chart.labels.length === 0 or state.dept_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-pie-chart fa-3x mb-2"></i>
+                                            <div>No department data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.dept_chart.labels.length > 0 and state.dept_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.dept_chart"
+                                            title="'Employees per Department'"
+                                            x_title="'Department'"
+                                            y_title="'Number of Employees'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

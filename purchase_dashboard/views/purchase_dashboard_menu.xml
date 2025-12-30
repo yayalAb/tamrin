@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Purchase Dashboard Client Action -->
+    <record id="action_purchase_dashboard" model="ir.actions.client">
+        <field name="name">Purchase Dashboard</field>
+        <field name="tag">purchase_dashboard.purchase_dashboard</field>
+    </record>
+    
+    <!-- Purchase Dashboard Menu -->
+    <menuitem id="purchase_dashboard_menu" 
+              name="Dashboard" 
+              parent="purchase.menu_purchase_root"
+              sequence="0"
+              action="action_purchase_dashboard"/>
+</odoo>
+

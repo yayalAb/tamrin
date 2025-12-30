@@ -1,0 +1,14 @@
+/* Purchase Dashboard Styles */
+.purchase-dashboard-card {
+    margin-bottom: 20px;
+}
+
+.purchase-dashboard-card .card-body {
+    padding: 15px;
+}
+
+.purchase-dashboard-chart-container {
+    position: relative;
+    height: 300px;
+}
+

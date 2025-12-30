@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_employee_report" model="ir.actions.report">
+        <field name="name">Employee Report</field>
+        <field name="model">employee.report.summary</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_report.employee_report_template</field>
+        <field name="report_file">custom_report.employee_report_template</field>
+        <field name="print_report_name">'Employee Report'</field>
+    </record>
+
+    <template id="employee_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <h2 class="text-center" style="margin-bottom: 20px;">
+                                    <strong>Employee Report</strong>
+                                </h2>
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                            <thead>
+                                <tr style="background-color: #4A90E2; color: white; font-weight: bold;">
+                                    <th colspan="7" style="padding: 10px; border: 1px solid #ddd; text-align: center; background-color: #2E5C8A;">
+                                        Office
+                                    </th>
+                                </tr>
+                                <tr style="background-color: #4A90E2; color: white; font-weight: bold;">
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Hiring Date</th>
+                                    <th rowspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: center; vertical-align: middle;">Education</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Edu Level</th>
+                                    <th colspan="3" style="padding: 10px; border: 1px solid #ddd; text-align: center;">Work Experience</th>
+                                    <th rowspan="2" style="padding: 10px; border: 1px solid #ddd; text-align: center; vertical-align: middle;">Basic Salary</th>
+                                </tr>
+                                <tr style="background-color: #4A90E2; color: white; font-weight: bold;">
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;"></th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;"></th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Work Experience at Tamrin</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Work Experience Before Tamrin</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Total Experience</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="not docs or len(docs) == 0">
+                                    <tr>
+                                        <td colspan="7" style="padding: 20px; text-align: center; border: 1px solid #ddd;">
+                                            No employee data found.
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="docs and len(docs) > 0">
+                                    <t t-foreach="docs" t-as="line">
+                                        <tr>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                                <t t-if="line.hiring_date">
+                                                    <t t-esc="line.hiring_date"/>
+                                                </t>
+                                                <t t-if="not line.hiring_date">
+                                                    -
+                                                </t>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                                <t t-esc="line.education or ''"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                                <t t-esc="line.edu_level or ''"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                                <t t-esc="'%.2f' % (line.work_experience_tamrin or 0.0)"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                                <t t-esc="'%.2f' % (line.work_experience_before or 0.0)"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                                <t t-esc="'%.2f' % (line.total_experience or 0.0)"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                                <t t-esc="'%.2f' % (line.basic_salary or 0.0)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div style="margin-top: 20px; text-align: right;">
+                            <strong>Total Employees: <t t-esc="len(docs) if docs else 0"/></strong>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
+

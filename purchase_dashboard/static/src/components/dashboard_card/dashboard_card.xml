@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="purchase_dashboard.DashboardCard" owl="1">
+        <div class="col-lg-2 col-md-4 col-sm-6 px-1 text-center">
+            <div class="shadow-sm border p-0 d-flex flex-column" 
+                 t-att-style="'background-color: ' + (props.bgColor || '#fff') + '; cursor: ' + (props.onClick ? 'pointer' : 'default') + '; border-radius: 10px; border: 1px solid #ccc; position: relative;'"
+                 t-on-click="props.onClick">
+                <div class="card-container" style="display: flex; border-radius: 10px; overflow: hidden; height: 120px;">
+                    <div style="flex: 1; padding: 20px;">
+                        <div class="row h-100">
+                            <div class="col-9 text-start d-flex flex-column justify-content-center">
+                                <h4 class="mb-1"><span t-esc="props.name"/></h4>
+                                <h5 class="card-count-value">
+                                    <div class="text-center"><span t-esc="props.value"/></div>
+                                </h5>
+                            </div>
+                            <div class="col-3 d-flex justify-content-center align-items-center">
+                                <i t-att-class="'fa ' + props.iconClass" t-att-style="'font-size: 24px; color: ' + (props.bgColor || '#4caf50') + ';'"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

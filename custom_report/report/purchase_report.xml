@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_purchase_report" model="ir.actions.report">
+        <field name="name">Purchase Report</field>
+        <field name="model">purchase.report.summary</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_report.purchase_report_template</field>
+        <field name="report_file">custom_report.purchase_report_template</field>
+        <field name="print_report_name">'Purchase Report'</field>
+    </record>
+
+    <template id="purchase_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <h2 class="text-center" style="margin-bottom: 20px;">
+                                    <strong>Purchase Report</strong>
+                                </h2>
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                            <thead>
+                                <tr style="background-color: #4A90E2; color: white; font-weight: bold;">
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">SN.</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Part Number (ID)</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Description</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">UOM</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Purchased Qty</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Purchased Date</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Unit Price</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Unit Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="not docs or len(docs) == 0">
+                                    <tr>
+                                        <td colspan="8" style="padding: 20px; text-align: center; border: 1px solid #ddd;">
+                                            No purchase data found for the selected period.
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="docs and len(docs) > 0">
+                                    <t t-foreach="docs" t-as="line">
+                                        <tr>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                                <t t-esc="line.sequence"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                                <t t-esc="line.part_number or ''"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                                <t t-esc="line.description or ''"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                                <t t-esc="line.uom or ''"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                                <t t-esc="'%.2f' % (line.purchased_qty or 0.0)"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                                <t t-if="line.purchase_date">
+                                                    <t t-esc="line.purchase_date"/>
+                                                </t>
+                                                <t t-if="not line.purchase_date">
+                                                    -
+                                                </t>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                                <t t-esc="'%.2f' % (line.unit_price or 0.0)"/>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                                <t t-esc="'%.2f' % (line.unit_cost or 0.0)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div style="margin-top: 20px; text-align: right;">
+                            <strong>Total Lines: <t t-esc="len(docs) if docs else 0"/></strong>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
+

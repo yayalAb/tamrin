@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- HR Dashboard Client Action -->
+    <record id="action_hr_dashboard" model="ir.actions.client">
+        <field name="name">HR Dashboard</field>
+        <field name="tag">hr_dashboard.hr_dashboard</field>
+    </record>
+    
+    <!-- HR Dashboard Menu -->
+    <menuitem id="hr_dashboard_menu" 
+              name="Dashboard" 
+              parent="hr.menu_hr_root"
+              sequence="0"
+              action="action_hr_dashboard"/>
+</odoo>

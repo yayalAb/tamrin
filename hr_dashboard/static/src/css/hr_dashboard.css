@@ -1,0 +1,14 @@
+/* HR Dashboard Styles */
+.hr-dashboard-card {
+    margin-bottom: 20px;
+}
+
+.hr-dashboard-card .card-body {
+    padding: 15px;
+}
+
+.hr-dashboard-chart-container {
+    position: relative;
+    height: 300px;
+}
+

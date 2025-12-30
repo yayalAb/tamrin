@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_sales_report"
+              name="Sales Report"
+              parent="sale.sale_menu_root"
+              action="custom_report.action_sales_report_wizard"
+              sequence="100"/>
+    
+    <menuitem id="menu_sales_report_summary"
+              name="Sales Report Summary"
+              parent="sale.sale_menu_root"
+              action="custom_report.action_sales_report_summary"
+              sequence="101"/>
+    
+    <menuitem id="menu_purchase_report"
+              name="Purchase Report"
+              parent="purchase.menu_purchase_root"
+              action="custom_report.action_purchase_report_wizard"
+              sequence="100"/>
+    
+    <menuitem id="menu_purchase_report_summary"
+              name="Purchase Report Summary"
+              parent="purchase.menu_purchase_root"
+              action="custom_report.action_purchase_report_summary"
+              sequence="101"/>
+    
+    <menuitem id="menu_inventory_report"
+              name="Inventory Report"
+              parent="stock.menu_stock_root"
+              action="custom_report.action_inventory_report_wizard"
+              sequence="100"/>
+    
+    <menuitem id="menu_inventory_report_summary"
+              name="Inventory Report Summary"
+              parent="stock.menu_stock_root"
+              action="custom_report.action_inventory_report_summary"
+              sequence="101"/>
+    
+    <menuitem id="menu_employee_report"
+              name="Employee Report"
+              parent="hr.menu_hr_root"
+              action="custom_report.action_employee_report_wizard"
+              sequence="100"/>
+    
+    <menuitem id="menu_employee_report_summary"
+              name="Employee Report Summary"
+              parent="hr.menu_hr_root"
+              action="custom_report.action_employee_report_summary"
+              sequence="101"/>
+</odoo>
+

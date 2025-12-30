@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="purchase_dashboard.PurchaseDashboard" owl="1">
+        <div class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
+            <!-- Fixed Header Section -->
+            <div class="flex-shrink-0 bg-light">
+                <div class="container-fluid px-2 pt-2">
+                    <div class="row m-0">
+                        <div class="col-12 px-0">
+                            <div class="shadow-sm m-1 p-1 bg-white">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <h1 class="fs-3 text-primary ms-3 mb-0">Purchase Performance Dashboard</h1>
+                                    <div class="w-100 w-md-auto mt-2 mt-md-0">
+                                        <div class="d-flex flex-column flex-md-row gap-2">
+                                            <input type="date" class="form-control" t-att-value="state.start_date" t-on-change="onStartDateChange" placeholder="Start Date"/>
+                                            <input type="date" class="form-control" t-att-value="state.end_date" t-on-change="onEndDateChange" placeholder="End Date"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content Section -->
+            <div class="flex-grow-1 overflow-auto bg-light">
+                <div class="container-fluid pb-2 px-2">
+                    <!--Cards Section -->
+                    <div class="row g-2 mb-2">
+                        <DashboardCard 
+                            name="'Total Orders'"
+                            value="state.total_orders.value"
+                            iconClass="'fa-shopping-cart'"
+                            bgColor="'#e8f5e9'"
+                            onClick="onTotalOrdersClick"/>
+                        
+                        <DashboardCard 
+                            name="'Total Amount'"
+                            value="getTotalAmountFormatted()"
+                            iconClass="'fa-money-bill-wave'"
+                            bgColor="'#fff3e0'"
+                            onClick="onTotalAmountClick"/>
+                        
+                        <DashboardCard 
+                            name="'Pending Orders'"
+                            value="state.pending_orders.value"
+                            iconClass="'fa-clock'"
+                            bgColor="'#e1f5fe'"
+                            onClick="onPendingOrdersClick"/>
+                        
+                        <DashboardCard 
+                            name="'Approved Orders'"
+                            value="state.approved_orders.value"
+                            iconClass="'fa-check-circle'"
+                            bgColor="'#f3e5f5'"
+                            onClick="onApprovedOrdersClick"/>
+                        
+                        <DashboardCard 
+                            name="'Avg Order Value'"
+                            value="getAvgOrderValueFormatted()"
+                            iconClass="'fa-chart-line'"
+                            bgColor="'#fff9c4'"
+                            onClick="onTotalAmountClick"/>
+                        
+                        <DashboardCard 
+                            name="'Total Vendors'"
+                            value="state.total_vendors.value"
+                            iconClass="'fa-building'"
+                            bgColor="'#ffebee'"
+                            onClick="onTotalVendorsClick"/>
+                    </div>
+                    
+                    <!-- Charts Section -->
+                    <div class="row mt-3">
+                        <!-- Monthly Purchase Trends Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Monthly Purchase Trends</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.trends_chart.labels.length === 0 or state.trends_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-line-chart fa-3x mb-2"></i>
+                                            <div>No purchase trends data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.trends_chart.labels.length > 0 and state.trends_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'line'"
+                                            data="state.trends_chart"
+                                            title="'Purchase Amount and Order Count Trends'"
+                                            x_title="'Month'"
+                                            y_title="'Amount'"
+                                            y1_title="'Number of Orders'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Vendor Performance Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Top Vendors Performance</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.vendor_chart.labels.length === 0 or state.vendor_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-bar-chart fa-3x mb-2"></i>
+                                            <div>No vendor performance data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.vendor_chart.labels.length > 0 and state.vendor_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.vendor_chart"
+                                            title="'Purchase Amount by Vendor'"
+                                            x_title="'Vendor'"
+                                            y_title="'Amount'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Spending Chart -->
+                    <div class="row mt-3">
+                        <div class="col-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Spending by Product Category</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.category_chart.labels.length === 0 or state.category_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-pie-chart fa-3x mb-2"></i>
+                                            <div>No category spending data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.category_chart.labels.length > 0 and state.category_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.category_chart"
+                                            title="'Purchase Spending by Category'"
+                                            x_title="'Product Category'"
+                                            y_title="'Amount'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

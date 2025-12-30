@@ -1,0 +1,14 @@
+/* Sales Dashboard Styles */
+.sales-dashboard-card {
+    margin-bottom: 20px;
+}
+
+.sales-dashboard-card .card-body {
+    padding: 15px;
+}
+
+.sales-dashboard-chart-container {
+    position: relative;
+    height: 300px;
+}
+

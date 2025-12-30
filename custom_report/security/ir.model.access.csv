@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sales_report_wizard_user,sales.report.wizard.user,model_sales_report_wizard,base.group_user,1,1,1,1
+access_sales_report_summary_user,sales.report.summary.user,model_sales_report_summary,base.group_user,1,0,0,0
+access_purchase_report_wizard_user,purchase.report.wizard.user,model_purchase_report_wizard,base.group_user,1,1,1,1
+access_purchase_report_summary_user,purchase.report.summary.user,model_purchase_report_summary,base.group_user,1,0,0,0
+access_inventory_report_wizard_user,inventory.report.wizard.user,model_inventory_report_wizard,base.group_user,1,1,1,1
+access_inventory_report_summary_user,inventory.report.summary.user,model_inventory_report_summary,base.group_user,1,0,0,0
+access_employee_report_wizard_user,employee.report.wizard.user,model_employee_report_wizard,base.group_user,1,1,1,1
+access_employee_report_summary_user,employee.report.summary.user,model_employee_report_summary,base.group_user,1,0,0,0
+

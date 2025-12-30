@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sales_report_summary_tree" model="ir.ui.view">
+        <field name="name">sales.report.summary.tree</field>
+        <field name="model">sales.report.summary</field>
+        <field name="arch" type="xml">
+            <tree string="Sales Report">
+                <field name="sequence" string="SN."/>
+                <field name="part_number" string="Part Number (ID)"/>
+                <field name="description" string="Description"/>
+                <field name="uom" string="UOM"/>
+                <field name="sold_qty" string="Sold Qty"/>
+                <field name="sale_date" string="Sale Date"/>
+                <field name="unit_price" string="Unit Price"/>
+                <field name="unit_cost" string="Unit Cost"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_sales_report_summary" model="ir.actions.act_window">
+        <field name="name">Sales Report</field>
+        <field name="res_model">sales.report.summary</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_sales_report_summary_tree"/>
+        <field name="domain">[]</field>
+    </record>
+</odoo>
+

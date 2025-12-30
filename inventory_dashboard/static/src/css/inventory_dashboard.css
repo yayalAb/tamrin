@@ -1,0 +1,14 @@
+/* Inventory Dashboard Styles */
+.inventory-dashboard-card {
+    margin-bottom: 20px;
+}
+
+.inventory-dashboard-card .card-body {
+    padding: 15px;
+}
+
+.inventory-dashboard-chart-container {
+    position: relative;
+    height: 300px;
+}
+

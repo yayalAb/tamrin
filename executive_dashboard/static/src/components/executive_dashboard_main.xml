@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="executive_dashboard.ExecutiveDashboard" owl="1">
+        <div class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
+            <!-- Fixed Header Section -->
+            <div class="flex-shrink-0 bg-light">
+                <div class="container-fluid px-2 pt-2">
+                    <div class="row m-0">
+                        <div class="col-12 px-0">
+                            <div class="shadow-sm m-1 p-1 bg-white">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <h1 class="fs-3 text-primary ms-3 mb-0">Executive Dashboard - Company Overview</h1>
+                                    <div class="w-100 w-md-auto mt-2 mt-md-0">
+                                        <div class="d-flex flex-column flex-md-row gap-2">
+                                            <input type="date" class="form-control" t-att-value="state.start_date" t-on-change="onStartDateChange" placeholder="Start Date"/>
+                                            <input type="date" class="form-control" t-att-value="state.end_date" t-on-change="onEndDateChange" placeholder="End Date"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content Section -->
+            <div class="flex-grow-1 overflow-auto bg-light">
+                <div class="container-fluid pb-2 px-2">
+                    <!-- Key Performance Cards -->
+                    <div class="row g-2 mb-4">
+                        <!-- HR Card -->
+                        <DashboardCard 
+                            name="'Human Resources'"
+                            value="getHREmployeesFormatted()"
+                            iconClass="'fa-users'"
+                            bgColor="'#e8f5e9'"/>
+                        
+                        <!-- Inventory Card -->
+                        <DashboardCard 
+                            name="'Inventory'"
+                            value="getTotalStockValueFormatted()"
+                            iconClass="'fa-boxes'"
+                            bgColor="'#f3e5f5'"/>
+                        
+                        <!-- Sales Card -->
+                        <DashboardCard 
+                            name="'Sales'"
+                            value="getTotalSalesRevenueFormatted()"
+                            iconClass="'fa-shopping-cart'"
+                            bgColor="'#fff3e0'"/>
+                        
+                        <!-- Purchase Card -->
+                        <DashboardCard 
+                            name="'Purchase'"
+                            value="getTotalPurchaseAmountFormatted()"
+                            iconClass="'fa-shopping-bag'"
+                            bgColor="'#e1f5fe'"/>
+                        
+                        <!-- Finance Card -->
+                        <DashboardCard 
+                            name="'Finance'"
+                            value="getProfitFormatted()"
+                            iconClass="'fa-coins'"
+                            bgColor="'#fff9c4'"/>
+                        
+                        <!-- Fleet Card -->
+                        <DashboardCard 
+                            name="'Fleet'"
+                            value="getFleetActiveFormatted()"
+                            iconClass="'fa-car'"
+                            bgColor="'#ffebee'"/>
+                    </div>
+                    
+                    <!-- Charts Section -->
+                    <div class="row mt-3">
+                        <!-- Revenue vs Expenses Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Revenue vs Expenses</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.revenue_expenses_chart.labels.length === 0 or state.revenue_expenses_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-line-chart fa-3x mb-2"></i>
+                                            <div>No financial data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.revenue_expenses_chart.labels.length > 0 and state.revenue_expenses_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'line'"
+                                            data="state.revenue_expenses_chart"
+                                            title="'Revenue, Expenses &amp; Profit Trends'"
+                                            x_title="'Month'"
+                                            y_title="'Amount'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sales vs Purchase Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Sales vs Purchase</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.sales_purchase_chart.labels.length === 0 or state.sales_purchase_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-line-chart fa-3x mb-2"></i>
+                                            <div>No sales/purchase data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.sales_purchase_chart.labels.length > 0 and state.sales_purchase_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'line'"
+                                            data="state.sales_purchase_chart"
+                                            title="'Sales Revenue vs Purchase Amount'"
+                                            x_title="'Month'"
+                                            y_title="'Amount'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Department Performance Chart -->
+                    <div class="row mt-3">
+                        <div class="col-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Employee Distribution by Department</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.department_chart.labels.length === 0 or state.department_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-bar-chart fa-3x mb-2"></i>
+                                            <div>No department data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.department_chart.labels.length > 0 and state.department_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.department_chart"
+                                            title="'Employees per Department'"
+                                            x_title="'Department'"
+                                            y_title="'Number of Employees'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

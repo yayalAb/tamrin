@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="inventory_dashboard.InventoryDashboard" owl="1">
+        <div class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
+            <!-- Fixed Header Section -->
+            <div class="flex-shrink-0 bg-light">
+                <div class="container-fluid px-2 pt-2">
+                    <div class="row m-0">
+                        <div class="col-12 px-0">
+                            <div class="shadow-sm m-1 p-1 bg-white">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <h1 class="fs-3 text-primary ms-3 mb-0">Inventory Performance Dashboard</h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content Section -->
+            <div class="flex-grow-1 overflow-auto bg-light">
+                <div class="container-fluid pb-2 px-2">
+                    <!--Cards Section -->
+                    <div class="row g-2 mb-2">
+                        <DashboardCard 
+                            name="'Total Products'"
+                            value="state.total_products.value"
+                            iconClass="'fa-boxes'"
+                            bgColor="'#e8f5e9'"
+                            onClick="onTotalProductsClick"/>
+                        
+                        <DashboardCard 
+                            name="'Products with Stock'"
+                            value="state.products_with_stock.value"
+                            iconClass="'fa-check-square'"
+                            bgColor="'#fff3e0'"
+                            onClick="onProductsWithStockClick"/>
+                        
+                        <DashboardCard 
+                            name="'Low Stock Items'"
+                            value="state.low_stock_products.value"
+                            iconClass="'fa-exclamation-triangle'"
+                            bgColor="'#fff9c4'"
+                            onClick="onLowStockClick"/>
+                        
+                        <DashboardCard 
+                            name="'Out of Stock'"
+                            value="state.out_of_stock_products.value"
+                            iconClass="'fa-times-circle'"
+                            bgColor="'#ffebee'"
+                            onClick="onOutOfStockClick"/>
+                        
+                        <DashboardCard 
+                            name="'Total Stock Value'"
+                            value="getTotalStockValueFormatted()"
+                            iconClass="'fa-dollar-sign'"
+                            bgColor="'#e1f5fe'"
+                            onClick="onTotalProductsClick"/>
+                        
+                        <DashboardCard 
+                            name="'Total Locations'"
+                            value="state.total_locations.value"
+                            iconClass="'fa-warehouse'"
+                            bgColor="'#f3e5f5'"
+                            onClick="onTotalLocationsClick"/>
+                    </div>
+                    
+                    <!-- Charts Section Row 1 -->
+                    <div class="row mt-3">
+                        <!-- Stock by Category Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Stock Quantity by Category</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.category_stock_chart.labels.length === 0 or state.category_stock_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-bar-chart fa-3x mb-2"></i>
+                                            <div>No category stock data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.category_stock_chart.labels.length > 0 and state.category_stock_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.category_stock_chart"
+                                            title="'Stock Quantity by Product Category'"
+                                            x_title="'Category'"
+                                            y_title="'Quantity'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Stock Value by Category Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Stock Value by Category</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.category_value_chart.labels.length === 0 or state.category_value_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-bar-chart fa-3x mb-2"></i>
+                                            <div>No category value data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.category_value_chart.labels.length > 0 and state.category_value_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.category_value_chart"
+                                            title="'Stock Value by Product Category'"
+                                            x_title="'Category'"
+                                            y_title="'Value'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Section Row 2 -->
+                    <div class="row mt-3">
+                        <!-- Top Products by Value Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Top Products by Stock Value</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.top_products_chart.labels.length === 0 or state.top_products_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-bar-chart fa-3x mb-2"></i>
+                                            <div>No product data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.top_products_chart.labels.length > 0 and state.top_products_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.top_products_chart"
+                                            title="'Top 10 Products by Stock Value'"
+                                            x_title="'Product'"
+                                            y_title="'Stock Value'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Stock by Location Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Stock Quantity by Location</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.location_chart.labels.length === 0 or state.location_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-bar-chart fa-3x mb-2"></i>
+                                            <div>No location stock data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.location_chart.labels.length > 0 and state.location_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.location_chart"
+                                            title="'Stock Quantity by Warehouse Location'"
+                                            x_title="'Location'"
+                                            y_title="'Quantity'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+
