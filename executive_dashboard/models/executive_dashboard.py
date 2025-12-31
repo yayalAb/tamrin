@@ -11,78 +11,129 @@ class ExecutiveDashboard(models.TransientModel):
     @api.model
     def get_company_overview(self, start_date=None, end_date=None):
         """Get overall company performance metrics"""
-        today = datetime.now().date()
-        if not start_date:
+        try:
+            today = datetime.now().date()
+            if not start_date:
+                start_date = (today - timedelta(days=30)).strftime('%Y-%m-%d')
+            if not end_date:
+                end_date = today.strftime('%Y-%m-%d')
+        except Exception:
+            today = datetime.now().date()
             start_date = (today - timedelta(days=30)).strftime('%Y-%m-%d')
-        if not end_date:
             end_date = today.strftime('%Y-%m-%d')
         
-        # Get currency symbol
-        company = self.env.company
-        currency_symbol = company.currency_id.symbol if company.currency_id else ''
-        
         # HR Metrics
-        total_employees = self.env['hr.employee'].search_count([('active', '=', True)])
-        contracts = self.env['hr.contract'].search([
-            ('state', 'in', ['open', 'close']),
-            ('date_end', '>=', start_date),
-            ('date_end', '<=', end_date)
-        ])
-        expiring_contracts = len(contracts)
-        total_payroll = sum(contracts.mapped('wage')) or 0.0
+        try:
+            total_employees = self.env['hr.employee'].search_count([('active', '=', True)])
+        except Exception:
+            total_employees = 0
+        
+        try:
+            contracts = self.env['hr.contract'].search([
+                ('state', 'in', ['open', 'close']),
+                ('date_end', '>=', start_date),
+                ('date_end', '<=', end_date)
+            ])
+            expiring_contracts = len(contracts)
+            total_payroll = sum(contracts.mapped('wage')) or 0.0
+        except Exception:
+            expiring_contracts = 0
+            total_payroll = 0.0
         
         # Inventory Metrics
-        products = self.env['product.product'].search([('type', '!=', 'service')])
-        total_products = len(products)
-        low_stock_products = len(products.filtered(lambda p: 0 < p.qty_available < 10))
-        total_stock_value = sum(products.mapped(lambda p: p.qty_available * p.standard_price)) or 0.0
+        try:
+            products = self.env['product.product'].search([('type', '!=', 'service')])
+            total_products = len(products)
+            
+            # Get stock quantities using stock.quant
+            low_stock_products = 0
+            total_stock_value = 0.0
+            try:
+                for product in products:
+                    # Get quantity from stock.quant
+                    quants = self.env['stock.quant'].search([
+                        ('product_id', '=', product.id),
+                        ('location_id.usage', '=', 'internal')
+                    ])
+                    qty_available = sum(quants.mapped('quantity')) or 0.0
+                    
+                    # Get standard_price safely
+                    standard_price = getattr(product, 'standard_price', 0.0) or 0.0
+                    
+                    if 0 < qty_available < 10:
+                        low_stock_products += 1
+                    
+                    total_stock_value += qty_available * standard_price
+            except Exception:
+                # If stock module is not available, set defaults
+                low_stock_products = 0
+                total_stock_value = 0.0
+        except Exception:
+            total_products = 0
+            low_stock_products = 0
+            total_stock_value = 0.0
         
         # Sales Metrics
-        sales_orders = self.env['sale.order'].search([
-            ('state', 'in', ['sale', 'done']),
-            ('date_order', '>=', start_date),
-            ('date_order', '<=', end_date)
-        ])
-        total_sales_orders = len(sales_orders)
-        total_sales_revenue = sum(sales_orders.mapped('amount_total')) or 0.0
-        quotations = self.env['sale.order'].search_count([
-            ('state', '=', 'draft'),
-            ('date_order', '>=', start_date),
-            ('date_order', '<=', end_date)
-        ])
+        try:
+            sales_orders = self.env['sale.order'].search([
+                ('state', 'in', ['sale', 'done']),
+                ('date_order', '>=', start_date),
+                ('date_order', '<=', end_date)
+            ])
+            total_sales_orders = len(sales_orders)
+            total_sales_revenue = sum(sales_orders.mapped('amount_total')) or 0.0
+            quotations = self.env['sale.order'].search_count([
+                ('state', '=', 'draft'),
+                ('date_order', '>=', start_date),
+                ('date_order', '<=', end_date)
+            ])
+        except Exception:
+            total_sales_orders = 0
+            total_sales_revenue = 0.0
+            quotations = 0
         
         # Purchase Metrics
-        purchase_orders = self.env['purchase.order'].search([
-            ('state', 'in', ['purchase', 'done']),
-            ('date_order', '>=', start_date),
-            ('date_order', '<=', end_date)
-        ])
-        total_purchase_orders = len(purchase_orders)
-        total_purchase_amount = sum(purchase_orders.mapped('amount_total')) or 0.0
-        pending_purchases = self.env['purchase.order'].search_count([
-            ('state', '=', 'draft'),
-            ('date_order', '>=', start_date),
-            ('date_order', '<=', end_date)
-        ])
+        try:
+            purchase_orders = self.env['purchase.order'].search([
+                ('state', 'in', ['purchase', 'done']),
+                ('date_order', '>=', start_date),
+                ('date_order', '<=', end_date)
+            ])
+            total_purchase_orders = len(purchase_orders)
+            total_purchase_amount = sum(purchase_orders.mapped('amount_total')) or 0.0
+            pending_purchases = self.env['purchase.order'].search_count([
+                ('state', '=', 'draft'),
+                ('date_order', '>=', start_date),
+                ('date_order', '<=', end_date)
+            ])
+        except Exception:
+            total_purchase_orders = 0
+            total_purchase_amount = 0.0
+            pending_purchases = 0
         
         # Finance Metrics
-        invoices = self.env['account.move'].search([
-            ('move_type', 'in', ['out_invoice', 'out_refund']),
-            ('state', '=', 'posted'),
-            ('invoice_date', '>=', start_date),
-            ('invoice_date', '<=', end_date)
-        ])
-        total_revenue = sum(invoices.filtered(lambda inv: inv.move_type == 'out_invoice').mapped('amount_total')) or 0.0
-        total_refunds = sum(invoices.filtered(lambda inv: inv.move_type == 'out_refund').mapped('amount_total')) or 0.0
-        net_revenue = total_revenue - total_refunds
-        
-        bills = self.env['account.move'].search([
-            ('move_type', 'in', ['in_invoice', 'in_refund']),
-            ('state', '=', 'posted'),
-            ('invoice_date', '>=', start_date),
-            ('invoice_date', '<=', end_date)
-        ])
-        total_expenses = sum(bills.filtered(lambda bill: bill.move_type == 'in_invoice').mapped('amount_total')) or 0.0
+        try:
+            invoices = self.env['account.move'].search([
+                ('move_type', 'in', ['out_invoice', 'out_refund']),
+                ('state', '=', 'posted'),
+                ('invoice_date', '>=', start_date),
+                ('invoice_date', '<=', end_date)
+            ])
+            total_revenue = sum(invoices.filtered(lambda inv: inv.move_type == 'out_invoice').mapped('amount_total')) or 0.0
+            total_refunds = sum(invoices.filtered(lambda inv: inv.move_type == 'out_refund').mapped('amount_total')) or 0.0
+            net_revenue = total_revenue - total_refunds
+            
+            bills = self.env['account.move'].search([
+                ('move_type', 'in', ['in_invoice', 'in_refund']),
+                ('state', '=', 'posted'),
+                ('invoice_date', '>=', start_date),
+                ('invoice_date', '<=', end_date)
+            ])
+            total_expenses = sum(bills.filtered(lambda bill: bill.move_type == 'in_invoice').mapped('amount_total')) or 0.0
+        except Exception:
+            total_revenue = 0.0
+            net_revenue = 0.0
+            total_expenses = 0.0
         
         # Fleet Metrics (if fleet module is installed)
         total_vehicles = 0
@@ -91,10 +142,18 @@ class ExecutiveDashboard(models.TransientModel):
             vehicles = self.env['fleet.vehicle'].search([])
             total_vehicles = len(vehicles)
             active_vehicles = len(vehicles.filtered(lambda v: v.state_id and v.state_id.name != 'Written-off'))
-        except:
+        except Exception:
             pass
         
-        return {
+        # Get currency symbol
+        try:
+            company = self.env.company
+            currency_symbol = company.currency_id.symbol if company.currency_id else ''
+        except Exception:
+            currency_symbol = ''
+        
+        try:
+            return {
             # HR
             'total_employees': total_employees,
             'expiring_contracts': expiring_contracts,
@@ -119,9 +178,35 @@ class ExecutiveDashboard(models.TransientModel):
             # Fleet
             'total_vehicles': total_vehicles,
             'active_vehicles': active_vehicles,
-            # Currency
-            'currency_symbol': currency_symbol,
-        }
+                # Currency
+                'currency_symbol': currency_symbol,
+            }
+        except Exception as e:
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.error("Error in get_company_overview: %s", str(e), exc_info=True)
+            # Return default values on error
+            return {
+                'total_employees': 0,
+                'expiring_contracts': 0,
+                'total_payroll': 0.0,
+                'total_products': 0,
+                'low_stock_products': 0,
+                'total_stock_value': 0.0,
+                'total_sales_orders': 0,
+                'total_sales_revenue': 0.0,
+                'quotations': 0,
+                'total_purchase_orders': 0,
+                'total_purchase_amount': 0.0,
+                'pending_purchases': 0,
+                'total_revenue': 0.0,
+                'net_revenue': 0.0,
+                'total_expenses': 0.0,
+                'profit': 0.0,
+                'total_vehicles': 0,
+                'active_vehicles': 0,
+                'currency_symbol': '',
+            }
 
     @api.model
     def get_revenue_vs_expenses(self, start_date=None, end_date=None):
@@ -195,50 +280,72 @@ class ExecutiveDashboard(models.TransientModel):
         sales_data = []
         purchase_data = []
 
-        for i in range(11, -1, -1):
-            month_date = datetime.now() - timedelta(days=30 * i)
-            month_start = month_date.replace(day=1)
-            month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        try:
+            for i in range(11, -1, -1):
+                month_date = datetime.now() - timedelta(days=30 * i)
+                month_start = month_date.replace(day=1)
+                month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
-            # Sales
-            sales_orders = self.env['sale.order'].search([
-                ('state', 'in', ['sale', 'done']),
-                ('date_order', '>=', month_start.strftime('%Y-%m-%d')),
-                ('date_order', '<=', month_end.strftime('%Y-%m-%d 23:59:59'))
-            ])
-            sales = sum(sales_orders.mapped('amount_total')) or 0.0
+                # Sales
+                try:
+                    sales_orders = self.env['sale.order'].search([
+                        ('state', 'in', ['sale', 'done']),
+                        ('date_order', '>=', month_start.strftime('%Y-%m-%d')),
+                        ('date_order', '<=', month_end.strftime('%Y-%m-%d 23:59:59'))
+                    ])
+                    sales = sum(sales_orders.mapped('amount_total')) or 0.0
+                except Exception:
+                    sales = 0.0
 
-            # Purchase
-            purchase_orders = self.env['purchase.order'].search([
-                ('state', 'in', ['purchase', 'done']),
-                ('date_order', '>=', month_start.strftime('%Y-%m-%d')),
-                ('date_order', '<=', month_end.strftime('%Y-%m-%d 23:59:59'))
-            ])
-            purchase = sum(purchase_orders.mapped('amount_total')) or 0.0
+                # Purchase
+                try:
+                    purchase_orders = self.env['purchase.order'].search([
+                        ('state', 'in', ['purchase', 'done']),
+                        ('date_order', '>=', month_start.strftime('%Y-%m-%d')),
+                        ('date_order', '<=', month_end.strftime('%Y-%m-%d 23:59:59'))
+                    ])
+                    purchase = sum(purchase_orders.mapped('amount_total')) or 0.0
+                except Exception:
+                    purchase = 0.0
 
-            labels.append(month_date.strftime('%b %Y'))
-            sales_data.append(sales)
-            purchase_data.append(purchase)
+                labels.append(month_date.strftime('%b %Y'))
+                sales_data.append(sales)
+                purchase_data.append(purchase)
+        except Exception:
+            # Return empty data on error
+            labels = []
+            sales_data = []
+            purchase_data = []
 
-        return {
-            'labels': labels,
-            'datasets': [
-                {
-                    'label': 'Sales Revenue',
-                    'data': sales_data,
-                    'borderColor': 'rgb(54, 162, 235)',
-                    'backgroundColor': 'rgba(54, 162, 235, 0.2)',
-                    'tension': 0.1,
-                },
-                {
-                    'label': 'Purchase Amount',
-                    'data': purchase_data,
-                    'borderColor': 'rgb(255, 99, 132)',
-                    'backgroundColor': 'rgba(255, 99, 132, 0.2)',
-                    'tension': 0.1,
-                },
-            ],
-        }
+        try:
+            return {
+                'labels': labels,
+                'datasets': [
+                    {
+                        'label': 'Sales Revenue',
+                        'data': sales_data,
+                        'borderColor': 'rgb(54, 162, 235)',
+                        'backgroundColor': 'rgba(54, 162, 235, 0.2)',
+                        'tension': 0.1,
+                    },
+                    {
+                        'label': 'Purchase Amount',
+                        'data': purchase_data,
+                        'borderColor': 'rgb(255, 99, 132)',
+                        'backgroundColor': 'rgba(255, 99, 132, 0.2)',
+                        'tension': 0.1,
+                    },
+                ],
+            }
+        except Exception as e:
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.error("Error in get_sales_vs_purchase: %s", str(e), exc_info=True)
+            # Return empty data structure on error
+            return {
+                'labels': [],
+                'datasets': [],
+            }
 
     @api.model
     def get_department_performance(self):

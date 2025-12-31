@@ -12,10 +12,11 @@ export class ExecutiveDashboard extends Component {
         // Set default dates to current month
         const today = new Date()
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
         
         this.state = useState({
             start_date: firstDayOfMonth.toISOString().split('T')[0],
-            end_date: today.toISOString().split('T')[0],
+            end_date: lastDayOfMonth.toISOString().split('T')[0],
             // HR Metrics
             total_employees: { value: 0 },
             expiring_contracts: { value: 0 },

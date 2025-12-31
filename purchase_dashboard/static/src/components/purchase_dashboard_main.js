@@ -12,10 +12,11 @@ export class PurchaseDashboard extends Component {
         // Set default dates to current month
         const today = new Date()
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
         
         this.state = useState({
             start_date: firstDayOfMonth.toISOString().split('T')[0],
-            end_date: today.toISOString().split('T')[0],
+            end_date: lastDayOfMonth.toISOString().split('T')[0],
             total_orders: { value: 0 },
             total_amount: { value: 0, currency: '' },
             pending_orders: { value: 0 },

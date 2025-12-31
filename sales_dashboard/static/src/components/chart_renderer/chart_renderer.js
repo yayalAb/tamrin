@@ -32,6 +32,10 @@ export class ChartRenderer extends Component {
 
         const ctx = this.chartRef.el.getContext("2d");
         
+        // Set canvas background to white
+        const canvas = this.chartRef.el;
+        canvas.style.backgroundColor = '#ffffff';
+        
         // Destroy existing chart if it exists
         if (this.chartInstance) {
             this.chartInstance.destroy();
@@ -40,18 +44,28 @@ export class ChartRenderer extends Component {
         // Check if we need dual y-axis (for mixed charts)
         const hasDualAxis = this.props.data.datasets.some(ds => ds.yAxisID);
         
+        console.log("Chart data:", this.props.data);
+        console.log("Has dual axis:", hasDualAxis);
+        
         const chartConfig = {
             type: this.props.type || "bar",
             data: this.props.data,
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
                     title: { 
                         display: !!this.props.title, 
                         text: this.props.title || "" 
                     },
-                    legend: { display: true, position: "top" },
+                    legend: { 
+                        display: true, 
+                        position: "top" 
+                    },
                 },
                 scales: {
                     y: {
@@ -61,6 +75,12 @@ export class ChartRenderer extends Component {
                             text: this.props.y_title || "" 
                         },
                         position: 'left',
+                        ticks: {
+                            color: 'rgba(0, 0, 0, 0.87)',
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                        },
                     },
                     ...(hasDualAxis && {
                         y1: {
@@ -70,6 +90,9 @@ export class ChartRenderer extends Component {
                                 text: this.props.y1_title || "" 
                             },
                             position: 'right',
+                            ticks: {
+                                color: 'rgba(0, 0, 0, 0.87)',
+                            },
                             grid: {
                                 drawOnChartArea: false,
                             },
@@ -80,11 +103,18 @@ export class ChartRenderer extends Component {
                             display: !!this.props.x_title, 
                             text: this.props.x_title || "" 
                         },
+                        ticks: {
+                            color: 'rgba(0, 0, 0, 0.87)',
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                        },
                     },
                 },
             },
         };
         
+        console.log("Rendering chart with config:", chartConfig);
         this.chartInstance = new Chart(ctx, chartConfig);
     }
 
@@ -100,6 +130,12 @@ export class ChartRenderer extends Component {
                 }
                 return;
             }
+            
+            // Ensure canvas background is white
+            if (this.chartRef.el) {
+                this.chartRef.el.style.backgroundColor = '#ffffff';
+            }
+            
             this.chartInstance.data = this.props.data;
             this.chartInstance.update();
         } else {
