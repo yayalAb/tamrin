@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="finance_dashboard.FinanceDashboard" owl="1">
+        <div class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
+            <!-- Fixed Header Section -->
+            <div class="flex-shrink-0 bg-light">
+                <div class="container-fluid px-2 pt-2">
+                    <div class="row m-0">
+                        <div class="col-12 px-0">
+                            <div class="shadow-sm m-1 p-1 bg-white">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <h1 class="fs-3 text-primary ms-3 mb-0">Finance Dashboard</h1>
+                                    <div class="w-100 w-md-auto mt-2 mt-md-0">
+                                        <div class="d-flex flex-column flex-md-row gap-2">
+                                            <input type="date" class="form-control" t-att-value="state.start_date" t-on-change="onStartDateChange" placeholder="Start Date"/>
+                                            <input type="date" class="form-control" t-att-value="state.end_date" t-on-change="onEndDateChange" placeholder="End Date"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content Section -->
+            <div class="flex-grow-1 overflow-auto bg-light">
+                <div class="container-fluid pb-2 px-2">
+                    <!--Cards Section -->
+                    <div class="row g-2 mb-2">
+                        <DashboardCard 
+                            name="'Total Revenue'"
+                            value="getTotalRevenueFormatted()"
+                            iconClass="'fa-chart-line'"
+                            bgColor="'#e8f5e9'"
+                            onClick="onTotalRevenueClick"/>
+                        
+                        <DashboardCard 
+                            name="'Net Revenue'"
+                            value="getNetRevenueFormatted()"
+                            iconClass="'fa-money-bill-wave'"
+                            bgColor="'#c8e6c9'"
+                            onClick="onTotalRevenueClick"/>
+                        
+                        <DashboardCard 
+                            name="'Total Expenses'"
+                            value="getTotalExpensesFormatted()"
+                            iconClass="'fa-file-invoice-dollar'"
+                            bgColor="'#ffebee'"
+                            onClick="onTotalExpensesClick"/>
+                        
+                        <DashboardCard 
+                            name="'Net Profit'"
+                            value="getProfitFormatted()"
+                            iconClass="'fa-chart-pie'"
+                            bgColor="'#fff3e0'"
+                            onClick="onProfitClick"/>
+                        
+                        <DashboardCard 
+                            name="'Accounts Receivable'"
+                            value="getAccountsReceivableFormatted()"
+                            iconClass="'fa-hand-holding-usd'"
+                            bgColor="'#e1f5fe'"
+                            onClick="onAccountsReceivableClick"/>
+                        
+                        <DashboardCard 
+                            name="'Accounts Payable'"
+                            value="getAccountsPayableFormatted()"
+                            iconClass="'fa-credit-card'"
+                            bgColor="'#f3e5f5'"
+                            onClick="onAccountsPayableClick"/>
+                        
+                        <DashboardCard 
+                            name="'Cash Inflow'"
+                            value="state.cash_inflow.currency + ' ' + formatCurrency(state.cash_inflow.value)"
+                            iconClass="'fa-arrow-down'"
+                            bgColor="'#e8f5e9'"
+                            onClick="onCashFlowClick"/>
+                        
+                        <DashboardCard 
+                            name="'Cash Outflow'"
+                            value="state.cash_outflow.currency + ' ' + formatCurrency(state.cash_outflow.value)"
+                            iconClass="'fa-arrow-up'"
+                            bgColor="'#ffebee'"
+                            onClick="onCashFlowClick"/>
+                        
+                        <DashboardCard 
+                            name="'Net Cash Flow'"
+                            value="getNetCashFlowFormatted()"
+                            iconClass="'fa-exchange-alt'"
+                            bgColor="'#fff9c4'"
+                            onClick="onCashFlowClick"/>
+                        
+                        <DashboardCard 
+                            name="'Total Invoices'"
+                            value="state.total_invoices.value"
+                            iconClass="'fa-file-invoice'"
+                            bgColor="'#e3f2fd'"
+                            onClick="onTotalRevenueClick"/>
+                        
+                        <DashboardCard 
+                            name="'Paid Invoices'"
+                            value="state.paid_invoices_count.value"
+                            iconClass="'fa-check-circle'"
+                            bgColor="'#c8e6c9'"
+                            onClick="onTotalRevenueClick"/>
+                        
+                        <DashboardCard 
+                            name="'Unpaid Invoices'"
+                            value="state.unpaid_invoices_count.value"
+                            iconClass="'fa-exclamation-circle'"
+                            bgColor="'#ffcdd2'"
+                            onClick="onAccountsReceivableClick"/>
+                    </div>
+                    
+                    <!-- Charts Section -->
+                    <div class="row mt-3">
+                        <!-- Revenue vs Expenses Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Revenue vs Expenses Trends</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.revenue_expenses_chart.labels.length === 0 or state.revenue_expenses_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-line-chart fa-3x mb-2"></i>
+                                            <div>No revenue/expenses trends data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.revenue_expenses_chart.labels.length > 0 and state.revenue_expenses_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'line'"
+                                            data="state.revenue_expenses_chart"
+                                            title="'Revenue, Expenses, and Profit Trends'"
+                                            x_title="'Month'"
+                                            y_title="'Amount'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Status Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Payment Status Breakdown</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.payment_status_chart.labels.length === 0 or state.payment_status_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-pie-chart fa-3x mb-2"></i>
+                                            <div>No payment status data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.payment_status_chart.labels.length > 0 and state.payment_status_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.payment_status_chart"
+                                            title="'Payment Status: Invoices vs Bills'"
+                                            x_title="'Payment Status'"
+                                            y_title="'Amount'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cash Flow Chart -->
+                    <div class="row mt-3">
+                        <div class="col-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Cash Flow Trends</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.cash_flow_chart.labels.length === 0 or state.cash_flow_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-line-chart fa-3x mb-2"></i>
+                                            <div>No cash flow trends data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.cash_flow_chart.labels.length > 0 and state.cash_flow_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'line'"
+                                            data="state.cash_flow_chart"
+                                            title="'Cash Flow Trends: Inflow, Outflow, and Net Flow'"
+                                            x_title="'Month'"
+                                            y_title="'Amount'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

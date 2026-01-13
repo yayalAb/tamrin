@@ -41,3 +41,4 @@ class EmployeeReportWizard(models.TransientModel):
         # Return PDF report action
         return self.env.ref('custom_report.action_employee_report').report_action(records)
 
+

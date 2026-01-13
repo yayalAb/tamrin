@@ -239,3 +239,4 @@ registry
     .category("actions")
     .add("inventory_dashboard.inventory_dashboard", InventoryDashboard)
 
+

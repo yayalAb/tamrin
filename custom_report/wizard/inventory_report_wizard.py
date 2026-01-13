@@ -45,3 +45,4 @@ class InventoryReportWizard(models.TransientModel):
         # Return PDF report action
         return self.env.ref('custom_report.action_inventory_report').report_action(records)
 
+

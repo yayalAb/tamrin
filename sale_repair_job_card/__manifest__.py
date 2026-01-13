@@ -20,3 +20,4 @@
     'license': 'AGPL-3',
 }
 
+

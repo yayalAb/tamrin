@@ -77,3 +77,4 @@ class PurchaseReportSummary(models.Model):
             )
         """)
 
+

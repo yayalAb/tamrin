@@ -49,3 +49,4 @@ class PurchaseReportWizard(models.TransientModel):
         # Return PDF report action
         return self.env.ref('custom_report.action_purchase_report').report_action(records)
 
+
