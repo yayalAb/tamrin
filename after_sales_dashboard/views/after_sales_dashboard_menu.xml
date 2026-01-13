@@ -8,9 +8,7 @@
     
     <!-- After Sales Dashboard Menu -->
     <menuitem id="after_sales_dashboard_menu" 
-              name="After Sales Dashboard" 
-              parent="sale.sale_menu_root"
+              name="After Sales" 
               sequence="5"
               action="action_after_sales_dashboard"/>
 </odoo>
-
