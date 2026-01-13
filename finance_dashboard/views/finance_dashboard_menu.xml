@@ -9,8 +9,7 @@
     <!-- Finance Dashboard Menu -->
     <menuitem id="finance_dashboard_menu" 
               name="Finance Dashboard" 
-              parent="account.menu_finance"
+              parent="account_accountant.menu_accounting"
               sequence="0"
               action="action_finance_dashboard"/>
 </odoo>
-

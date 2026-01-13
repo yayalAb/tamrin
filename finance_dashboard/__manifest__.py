@@ -31,7 +31,7 @@
     "company": "Your Company",
     "maintainer": "Your Company",
     "website": "https://www.yourcompany.com",
-    "depends": ["account"],
+    "depends": ["account_accountant"],
     "data": [
         "views/finance_dashboard_menu.xml",
     ],
@@ -52,4 +52,3 @@
     "application": False,
     "license": "AGPL-3",
 }
-
