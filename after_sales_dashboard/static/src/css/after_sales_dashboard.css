@@ -1,0 +1,25 @@
+/* After Sales Dashboard Styles */
+.after-sales-dashboard-card {
+    margin-bottom: 20px;
+}
+
+.after-sales-dashboard-card .card-body {
+    padding: 15px;
+}
+
+.after-sales-dashboard-chart-container {
+    position: relative;
+    height: 300px;
+}
+
+.chart-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background-color: #ffffff;
+}
+
+.chart-container canvas {
+    background-color: #ffffff;
+}
+

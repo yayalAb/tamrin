@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- After Sales Dashboard Client Action -->
+    <record id="action_after_sales_dashboard" model="ir.actions.client">
+        <field name="name">After Sales Dashboard</field>
+        <field name="tag">after_sales_dashboard.after_sales_dashboard</field>
+    </record>
+    
+    <!-- After Sales Dashboard Menu -->
+    <menuitem id="after_sales_dashboard_menu" 
+              name="After Sales Dashboard" 
+              parent="sale.sale_menu_root"
+              sequence="5"
+              action="action_after_sales_dashboard"/>
+</odoo>
+

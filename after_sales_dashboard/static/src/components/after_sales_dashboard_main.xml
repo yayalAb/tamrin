@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="after_sales_dashboard.AfterSalesDashboard" owl="1">
+        <div class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
+            <!-- Fixed Header Section -->
+            <div class="flex-shrink-0 bg-light">
+                <div class="container-fluid px-2 pt-2">
+                    <div class="row m-0">
+                        <div class="col-12 px-0">
+                            <div class="shadow-sm m-1 p-1 bg-white">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                    <h1 class="fs-3 text-primary ms-3 mb-0">After Sales Dashboard - Car Sales Industry</h1>
+                                    <div class="w-100 w-md-auto mt-2 mt-md-0">
+                                        <div class="d-flex flex-column flex-md-row gap-2">
+                                            <input type="date" class="form-control" t-att-value="state.start_date" t-on-change="onStartDateChange" placeholder="Start Date"/>
+                                            <input type="date" class="form-control" t-att-value="state.end_date" t-on-change="onEndDateChange" placeholder="End Date"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scrollable Content Section -->
+            <div class="flex-grow-1 overflow-auto bg-light">
+                <div class="container-fluid pb-2 px-2">
+                    <!--Cards Section -->
+                    <div class="row g-2 mb-2">
+                        <DashboardCard 
+                            name="'Total Service Orders'"
+                            value="state.total_service_orders.value"
+                            iconClass="'fa-wrench'"
+                            bgColor="'#e8f5e9'"
+                            onClick="onTotalServiceOrdersClick"/>
+                        
+                        <DashboardCard 
+                            name="'Total Service Revenue'"
+                            value="getTotalRevenueFormatted()"
+                            iconClass="'fa-money-bill-wave'"
+                            bgColor="'#fff3e0'"
+                            onClick="onTotalRevenueClick"/>
+                        
+                        <DashboardCard 
+                            name="'Avg Service Value'"
+                            value="getAvgServiceValueFormatted()"
+                            iconClass="'fa-chart-line'"
+                            bgColor="'#fff9c4'"
+                            onClick="onTotalRevenueClick"/>
+                        
+                        <DashboardCard 
+                            name="'Service Customers'"
+                            value="state.total_customers.value"
+                            iconClass="'fa-users'"
+                            bgColor="'#ffebee'"
+                            onClick="onTotalCustomersClick"/>
+                        
+                        <DashboardCard 
+                            name="'Warranty Claims'"
+                            value="state.warranty_claims.value"
+                            iconClass="'fa-shield-alt'"
+                            bgColor="'#e8eaf6'"
+                            onClick="onWarrantyClaimsClick"/>
+                        
+                        <DashboardCard 
+                            name="'Parts Revenue'"
+                            value="getPartsRevenueFormatted()"
+                            iconClass="'fa-cog'"
+                            bgColor="'#f1f8e9'"
+                            onClick="onTotalRevenueClick"/>
+                    </div>
+                    
+                    <!-- Charts Section Row 1 -->
+                    <div class="row mt-3">
+                        <!-- Monthly Service Trends Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Monthly Service Trends</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.trends_chart.labels.length === 0 or state.trends_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-line-chart fa-3x mb-2"></i>
+                                            <div>No service trends data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.trends_chart.labels.length > 0 and state.trends_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'line'"
+                                            data="state.trends_chart"
+                                            title="'Service Revenue and Order Count Trends'"
+                                            x_title="'Month'"
+                                            y_title="'Revenue'"
+                                            y1_title="'Number of Orders'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Service Type Breakdown Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Service Type Breakdown</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.service_type_chart.labels.length === 0 or state.service_type_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-pie-chart fa-3x mb-2"></i>
+                                            <div>No service type data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.service_type_chart.labels.length > 0 and state.service_type_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'doughnut'"
+                                            data="state.service_type_chart"
+                                            title="'Revenue by Service Type'"
+                                            x_title="'Service Type'"
+                                            y_title="'Revenue'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Section Row 2 -->
+                    <div class="row mt-3">
+                        <!-- Customer Service Performance Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Top Customers - Service Performance</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.customer_chart.labels.length === 0 or state.customer_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-bar-chart fa-3x mb-2"></i>
+                                            <div>No customer performance data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.customer_chart.labels.length > 0 and state.customer_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.customer_chart"
+                                            title="'Service Revenue by Customer'"
+                                            x_title="'Customer'"
+                                            y_title="'Revenue'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Invoice Status Chart -->
+                        <div class="col-lg-6 col-md-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Service Revenue by Invoice Status</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.invoice_status_chart.labels.length === 0 or state.invoice_status_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-file-invoice fa-3x mb-2"></i>
+                                            <div>No invoice status data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.invoice_status_chart.labels.length > 0 and state.invoice_status_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'pie'"
+                                            data="state.invoice_status_chart"
+                                            title="'Revenue by Invoice Status'"
+                                            x_title="'Status'"
+                                            y_title="'Revenue'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Parts Category Sales Chart -->
+                    <div class="row mt-3">
+                        <div class="col-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <h3 class="fw-bold mb-0">Parts Sales by Category</h3>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.parts_category_chart.labels.length === 0 or state.parts_category_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-cog fa-3x mb-2"></i>
+                                            <div>No parts category sales data available</div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.parts_category_chart.labels.length > 0 and state.parts_category_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'bar'"
+                                            data="state.parts_category_chart"
+                                            title="'Parts Sales by Product Category'"
+                                            x_title="'Product Category'"
+                                            y_title="'Revenue'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Collection Forecast Chart -->
+                    <div class="row mt-3">
+                        <div class="col-12 px-1 mb-3">
+                            <div class="shadow-sm border p-3 bg-white h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                    <div>
+                                        <h3 class="fw-bold mb-0">Collection Forecast - Installment Payments</h3>
+                                        <p class="text-muted mb-0 small">Expected collections from car sales with installment payment plans</p>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <label class="mb-0">Forecast Period:</label>
+                                        <select class="form-control form-control-sm" style="width: 100px;" 
+                                                t-att-value="state.forecast_months" 
+                                                t-on-change="onForecastMonthsChange">
+                                            <option value="6">6 Months</option>
+                                            <option value="12">12 Months</option>
+                                            <option value="18">18 Months</option>
+                                            <option value="24">24 Months</option>
+                                        </select>
+                                        <div class="text-success fw-bold">
+                                            <i class="fa fa-money-bill-wave me-1"></i>
+                                            Total Expected: <span t-esc="getTotalExpectedCollectionsFormatted()"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="invoice-chart-container" style="height: 400px;">
+                                    <t t-if="state.collection_forecast_chart.labels.length === 0 or state.collection_forecast_chart.datasets.length === 0">
+                                        <div class="text-center p-4 text-muted">
+                                            <i class="fa fa-chart-line fa-3x mb-2"></i>
+                                            <div>No collection forecast data available</div>
+                                            <small>Create sale orders with payment terms to see collection forecast</small>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.collection_forecast_chart.labels.length > 0 and state.collection_forecast_chart.datasets.length > 0">
+                                        <ChartRenderer 
+                                            type="'line'"
+                                            data="state.collection_forecast_chart"
+                                            title="'Expected Collections by Month'"
+                                            x_title="'Month'"
+                                            y_title="'Expected Amount'"
+                                        />
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
+

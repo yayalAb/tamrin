@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_generate_sample_data" model="ir.actions.act_window">
+        <field name="name">Generate Sample Data</field>
+        <field name="res_model">sample.data.generator</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list</field>
+    </record>
+    
+    <record id="view_sample_data_generator_form" model="ir.ui.view">
+        <field name="name">sample.data.generator.form</field>
+        <field name="model">sample.data.generator</field>
+        <field name="arch" type="xml">
+            <form string="Generate Sample Data">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Generate Sample Data for Dashboards</h1>
+                    </div>
+                    <group>
+                        <p>This wizard will generate sample data including:</p>
+                        <ul>
+                            <li>Product Categories (Cars, Parts, Services, Warranty)</li>
+                            <li>Sample Products (5 Cars, 8 Parts, 6 Services, 1 Warranty)</li>
+                            <li>Sample Customers (10 customers)</li>
+                            <li>Sample Sale Orders (15 car sales with installment payment terms)</li>
+                            <li>Sample Service Orders (20 after-sales service orders)</li>
+                        </ul>
+                        <p><strong>Note:</strong> This will create new records. Existing records with the same names will be reused.</p>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="generate_sample_data" string="Generate Sample Data" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
+
