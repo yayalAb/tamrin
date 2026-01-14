@@ -35,6 +35,21 @@ export class PurchaseDashboard extends Component {
                 labels: [],
                 datasets: [],
             },
+            purchase_type_chart: {
+                labels: [],
+                datasets: [],
+            },
+            urgent_purchases: { value: 0, amount: 0, currency: '' },
+            sensitive_purchases: { value: 0, amount: 0, currency: '' },
+            delay_chart: {
+                labels: [],
+                datasets: [],
+            },
+            total_delayed: { value: 0, amount: 0, currency: '' },
+            eoq_data: {
+                summary: { total_products_analyzed: 0, avg_eoq: 0 },
+                top_products: [],
+            },
         })
 
         this.orm = useService("orm")
@@ -136,6 +151,39 @@ export class PurchaseDashboard extends Component {
             })
         }
 
+        this.onUrgentPurchasesClick = () => {
+            this.action.doAction({
+                type: "ir.actions.act_window",
+                name: "Purchase Orders",
+                res_model: "purchase.order",
+                views: [[false, "list"], [false, "form"]],
+                domain: [['state', 'in', ['purchase', 'done', 'draft']]],
+                target: "current",
+            })
+        }
+
+        this.onSensitivePurchasesClick = () => {
+            this.action.doAction({
+                type: "ir.actions.act_window",
+                name: "Purchase Orders",
+                res_model: "purchase.order",
+                views: [[false, "list"], [false, "form"]],
+                domain: [['state', 'in', ['purchase', 'done', 'draft']]],
+                target: "current",
+            })
+        }
+
+        this.onDelayedPurchasesClick = () => {
+            this.action.doAction({
+                type: "ir.actions.act_window",
+                name: "Purchase Orders",
+                res_model: "purchase.order",
+                views: [[false, "list"], [false, "form"]],
+                domain: [['state', 'in', ['purchase', 'done']]],
+                target: "current",
+            })
+        }
+
         this.formatCurrency = (amount) => {
             if (!amount && amount !== 0) return "0.00"
             return amount.toLocaleString('en-US', {
@@ -157,6 +205,24 @@ export class PurchaseDashboard extends Component {
             return `${currency} ${amount}`
         }
 
+        this.getUrgentPurchasesFormatted = () => {
+            const currency = this.state.urgent_purchases.currency || ''
+            const amount = this.formatCurrency(this.state.urgent_purchases.amount || 0)
+            return `${currency} ${amount}`
+        }
+
+        this.getSensitivePurchasesFormatted = () => {
+            const currency = this.state.sensitive_purchases.currency || ''
+            const amount = this.formatCurrency(this.state.sensitive_purchases.amount || 0)
+            return `${currency} ${amount}`
+        }
+
+        this.getDelayedPurchasesFormatted = () => {
+            const currency = this.state.total_delayed.currency || ''
+            const amount = this.formatCurrency(this.state.total_delayed.amount || 0)
+            return `${currency} ${amount}`
+        }
+
         this.onStartDateChange = async ev => {
             this.state.start_date = ev.target.value
             await this.refreshData()
@@ -174,6 +240,11 @@ export class PurchaseDashboard extends Component {
             this.getMonthlyTrends(),
             this.getVendorPerformance(),
             this.getCategorySpending(),
+            this.getPurchaseByType(),
+            this.getUrgentPurchases(),
+            this.getSensitivePurchases(),
+            this.getDelayPeriodData(),
+            this.getEconomicOrderQuantity(),
         ])
     }
 
@@ -254,6 +325,101 @@ export class PurchaseDashboard extends Component {
             }
         } catch (error) {
             console.error("Error loading category spending:", error)
+        }
+    }
+
+    async getPurchaseByType() {
+        try {
+            const typeData = await this.orm.call(
+                "purchase.order",
+                "get_purchase_by_type",
+                [this.state.start_date || null, this.state.end_date || null]
+            )
+
+            if (typeData && typeData.labels && typeData.datasets) {
+                this.state.purchase_type_chart = {
+                    labels: typeData.labels || [],
+                    datasets: typeData.datasets || [],
+                }
+            }
+        } catch (error) {
+            console.error("Error loading purchase by type:", error)
+        }
+    }
+
+    async getUrgentPurchases() {
+        try {
+            const urgentData = await this.orm.call(
+                "purchase.order",
+                "get_urgent_purchases",
+                [this.state.start_date || null, this.state.end_date || null]
+            )
+            this.state.urgent_purchases.value = urgentData.count || 0
+            this.state.urgent_purchases.amount = urgentData.amount || 0.0
+            this.state.urgent_purchases.currency = this.state.total_amount.currency || ''
+        } catch (error) {
+            console.error("Error loading urgent purchases:", error)
+            this.state.urgent_purchases.value = 0
+            this.state.urgent_purchases.amount = 0.0
+        }
+    }
+
+    async getSensitivePurchases() {
+        try {
+            const sensitiveData = await this.orm.call(
+                "purchase.order",
+                "get_sensitive_data_purchases",
+                [this.state.start_date || null, this.state.end_date || null]
+            )
+            this.state.sensitive_purchases.value = sensitiveData.count || 0
+            this.state.sensitive_purchases.amount = sensitiveData.amount || 0.0
+            this.state.sensitive_purchases.currency = this.state.total_amount.currency || ''
+        } catch (error) {
+            console.error("Error loading sensitive purchases:", error)
+            this.state.sensitive_purchases.value = 0
+            this.state.sensitive_purchases.amount = 0.0
+        }
+    }
+
+    async getDelayPeriodData() {
+        try {
+            const delayData = await this.orm.call(
+                "purchase.order",
+                "get_delay_period_data",
+                [this.state.start_date || null, this.state.end_date || null]
+            )
+            this.state.total_delayed.value = delayData.total_delayed || 0
+            this.state.total_delayed.amount = delayData.total_delay_amount || 0.0
+            this.state.total_delayed.currency = this.state.total_amount.currency || ''
+            
+            if (delayData && delayData.labels && delayData.datasets) {
+                this.state.delay_chart = {
+                    labels: delayData.labels || [],
+                    datasets: delayData.datasets || [],
+                }
+            }
+        } catch (error) {
+            console.error("Error loading delay period data:", error)
+            this.state.total_delayed.value = 0
+            this.state.total_delayed.amount = 0.0
+        }
+    }
+
+    async getEconomicOrderQuantity() {
+        try {
+            const eoqData = await this.orm.call(
+                "purchase.order",
+                "get_economic_order_quantity",
+                [this.state.start_date || null, this.state.end_date || null]
+            )
+            if (eoqData && eoqData.summary && eoqData.top_products) {
+                this.state.eoq_data = {
+                    summary: eoqData.summary || { total_products_analyzed: 0, avg_eoq: 0 },
+                    top_products: eoqData.top_products || [],
+                }
+            }
+        } catch (error) {
+            console.error("Error loading economic order quantity:", error)
         }
     }
 }
