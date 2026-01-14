@@ -240,3 +240,350 @@ class HrEmployee(models.Model):
             ],
         }
 
+    @api.model
+    def get_retirement_data(self, months_ahead=24):
+        """Get employees approaching retirement within specified months"""
+        try:
+            from dateutil.relativedelta import relativedelta
+            today = datetime.now().date()
+            retirement_date_limit = today + relativedelta(months=months_ahead)
+            
+            employees = self.search([('active', '=', True)])
+            upcoming_retirements = []
+            
+            # Standard retirement age (can be configured, typically 60-65)
+            retirement_age = 60
+            
+            for emp in employees:
+                if emp.birthday:
+                    try:
+                        birth_date = emp.birthday
+                        if isinstance(birth_date, str):
+                            birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
+                        elif isinstance(birth_date, datetime):
+                            birth_date = birth_date.date()
+                        
+                        retirement_date = birth_date + relativedelta(years=retirement_age)
+                        
+                        if today <= retirement_date <= retirement_date_limit:
+                            years_until_retirement = (retirement_date - today).days / 365.25
+                            upcoming_retirements.append({
+                                'employee': emp.name,
+                                'retirement_date': retirement_date.strftime('%Y-%m-%d'),
+                                'years_until': round(years_until_retirement, 1),
+                                'age': (today - birth_date).days / 365.25,
+                            })
+                    except Exception:
+                        continue
+            
+            # Sort by retirement date
+            upcoming_retirements.sort(key=lambda x: x['retirement_date'])
+            
+            return {
+                'count': len(upcoming_retirements),
+                'employees': upcoming_retirements[:10],  # Top 10
+                'total_count': len(upcoming_retirements),
+            }
+        except Exception as e:
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.error("Error in get_retirement_data: %s", str(e))
+            return {
+                'count': 0,
+                'employees': [],
+                'total_count': 0,
+            }
+
+    @api.model
+    def get_employees_by_qualification(self):
+        """Get employee breakdown by qualification/education"""
+        try:
+            employees = self.search([('active', '=', True)])
+            qualification_data = {}
+            
+            for emp in employees:
+                # Use study_field as qualification, fallback to study_school or 'Not Specified'
+                qualification = emp.study_field if hasattr(emp, 'study_field') and emp.study_field else (
+                    emp.study_school if hasattr(emp, 'study_school') and emp.study_school else 'Not Specified'
+                )
+                
+                qualification_name = qualification if qualification else 'Not Specified'
+                qualification_data[qualification_name] = qualification_data.get(qualification_name, 0) + 1
+            
+            labels = list(qualification_data.keys())
+            data = list(qualification_data.values())
+            
+            return {
+                'labels': labels,
+                'datasets': [
+                    {
+                        'label': 'Employees by Qualification',
+                        'data': data,
+                        'backgroundColor': [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)',
+                            'rgba(199, 199, 199, 0.6)',
+                            'rgba(83, 102, 255, 0.6)',
+                            'rgba(255, 99, 255, 0.6)',
+                            'rgba(99, 255, 132, 0.6)',
+                        ],
+                        'borderColor': [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(199, 199, 199, 1)',
+                            'rgba(83, 102, 255, 1)',
+                            'rgba(255, 99, 255, 1)',
+                            'rgba(99, 255, 132, 1)',
+                        ],
+                        'borderWidth': 1,
+                    },
+                ],
+            }
+        except Exception as e:
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.error("Error in get_employees_by_qualification: %s", str(e))
+            return {
+                'labels': [],
+                'datasets': [
+                    {
+                        'label': 'Employees by Qualification',
+                        'data': [],
+                        'backgroundColor': [],
+                        'borderColor': [],
+                        'borderWidth': 1,
+                    },
+                ],
+            }
+
+    @api.model
+    def get_employees_by_gender(self):
+        """Get employee breakdown by gender"""
+        try:
+            employees = self.search([('active', '=', True)])
+            gender_data = {'Male': 0, 'Female': 0, 'Other': 0, 'Not Specified': 0}
+            
+            for emp in employees:
+                if hasattr(emp, 'gender') and emp.gender:
+                    gender = emp.gender
+                    if gender in ['male', 'Male', 'M']:
+                        gender_data['Male'] += 1
+                    elif gender in ['female', 'Female', 'F']:
+                        gender_data['Female'] += 1
+                    elif gender in ['other', 'Other', 'O']:
+                        gender_data['Other'] += 1
+                    else:
+                        gender_data['Not Specified'] += 1
+                else:
+                    gender_data['Not Specified'] += 1
+            
+            # Remove categories with 0 count for cleaner chart
+            gender_data = {k: v for k, v in gender_data.items() if v > 0}
+            
+            labels = list(gender_data.keys())
+            data = list(gender_data.values())
+            
+            return {
+                'labels': labels,
+                'datasets': [
+                    {
+                        'label': 'Employees by Gender',
+                        'data': data,
+                        'backgroundColor': [
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(199, 199, 199, 0.6)',
+                        ],
+                        'borderColor': [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(199, 199, 199, 1)',
+                        ],
+                        'borderWidth': 1,
+                    },
+                ],
+            }
+        except Exception as e:
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.error("Error in get_employees_by_gender: %s", str(e))
+            return {
+                'labels': [],
+                'datasets': [
+                    {
+                        'label': 'Employees by Gender',
+                        'data': [],
+                        'backgroundColor': [],
+                        'borderColor': [],
+                        'borderWidth': 1,
+                    },
+                ],
+            }
+
+    @api.model
+    def get_employees_by_experience_level(self):
+        """Get employee breakdown by experience level"""
+        try:
+            from dateutil.relativedelta import relativedelta
+            employees = self.search([('active', '=', True)])
+            experience_levels = {
+                'Entry Level (0-2 years)': 0,
+                'Junior (2-5 years)': 0,
+                'Mid-Level (5-10 years)': 0,
+                'Senior (10-15 years)': 0,
+                'Expert (15+ years)': 0,
+                'Not Specified': 0,
+            }
+            
+            today = datetime.now().date()
+            
+            for emp in employees:
+                # Get experience from contract start date
+                contracts = self.env['hr.contract'].search([
+                    ('employee_id', '=', emp.id),
+                    ('state', 'in', ['open', 'close'])
+                ], order='date_start asc', limit=1)
+                
+                if contracts and contracts[0].date_start:
+                    try:
+                        start_date = contracts[0].date_start
+                        if isinstance(start_date, str):
+                            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                        elif isinstance(start_date, datetime):
+                            start_date = start_date.date()
+                        
+                        years_exp = (today - start_date).days / 365.25
+                        
+                        if years_exp < 2:
+                            experience_levels['Entry Level (0-2 years)'] += 1
+                        elif years_exp < 5:
+                            experience_levels['Junior (2-5 years)'] += 1
+                        elif years_exp < 10:
+                            experience_levels['Mid-Level (5-10 years)'] += 1
+                        elif years_exp < 15:
+                            experience_levels['Senior (10-15 years)'] += 1
+                        else:
+                            experience_levels['Expert (15+ years)'] += 1
+                    except Exception:
+                        experience_levels['Not Specified'] += 1
+                else:
+                    experience_levels['Not Specified'] += 1
+            
+            # Remove categories with 0 count
+            experience_levels = {k: v for k, v in experience_levels.items() if v > 0}
+            
+            labels = list(experience_levels.keys())
+            data = list(experience_levels.values())
+            
+            return {
+                'labels': labels,
+                'datasets': [
+                    {
+                        'label': 'Employees by Experience Level',
+                        'data': data,
+                        'backgroundColor': [
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(255, 159, 64, 0.6)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(199, 199, 199, 0.6)',
+                        ],
+                        'borderColor': [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(199, 199, 199, 1)',
+                        ],
+                        'borderWidth': 1,
+                    },
+                ],
+            }
+        except Exception as e:
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.error("Error in get_employees_by_experience_level: %s", str(e))
+            return {
+                'labels': [],
+                'datasets': [
+                    {
+                        'label': 'Employees by Experience Level',
+                        'data': [],
+                        'backgroundColor': [],
+                        'borderColor': [],
+                        'borderWidth': 1,
+                    },
+                ],
+            }
+
+    @api.model
+    def get_birthday_notifications(self, days_ahead=30):
+        """Get upcoming birthdays within specified days"""
+        try:
+            from dateutil.relativedelta import relativedelta
+            today = datetime.now().date()
+            end_date = today + timedelta(days=days_ahead)
+            
+            employees = self.search([('active', '=', True)])
+            upcoming_birthdays = []
+            
+            for emp in employees:
+                if emp.birthday:
+                    try:
+                        birth_date = emp.birthday
+                        if isinstance(birth_date, str):
+                            birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
+                        elif isinstance(birth_date, datetime):
+                            birth_date = birth_date.date()
+                        
+                        # Calculate this year's birthday
+                        this_year_birthday = birth_date.replace(year=today.year)
+                        
+                        # If birthday has passed this year, use next year
+                        if this_year_birthday < today:
+                            this_year_birthday = birth_date.replace(year=today.year + 1)
+                        
+                        # Check if birthday is within the range
+                        if today <= this_year_birthday <= end_date:
+                            days_until = (this_year_birthday - today).days
+                            age = (today - birth_date).days / 365.25
+                            upcoming_birthdays.append({
+                                'employee': emp.name,
+                                'birthday': this_year_birthday.strftime('%Y-%m-%d'),
+                                'days_until': days_until,
+                                'age': int(age),
+                                'department': emp.department_id.name if emp.department_id else 'No Department',
+                            })
+                    except Exception:
+                        continue
+            
+            # Sort by birthday date
+            upcoming_birthdays.sort(key=lambda x: x['birthday'])
+            
+            return {
+                'count': len(upcoming_birthdays),
+                'employees': upcoming_birthdays[:10],  # Top 10
+                'total_count': len(upcoming_birthdays),
+            }
+        except Exception as e:
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.error("Error in get_birthday_notifications: %s", str(e))
+            return {
+                'count': 0,
+                'employees': [],
+                'total_count': 0,
+            }
+

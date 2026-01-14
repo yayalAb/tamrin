@@ -23,6 +23,20 @@ export class HRDashboard extends Component {
             total_appraisals: { value: 0 },
             total_recruitments: { value: 0 },
             total_resignations: { value: 0 },
+            upcoming_retirements: { value: 0 },
+            upcoming_birthdays: { value: 0 },
+            qualification_chart: {
+                labels: [],
+                datasets: [],
+            },
+            gender_chart: {
+                labels: [],
+                datasets: [],
+            },
+            experience_chart: {
+                labels: [],
+                datasets: [],
+            },
             inventory_chart: {
                 labels: [],
                 datasets: [
@@ -144,6 +158,12 @@ export class HRDashboard extends Component {
             })
         }
 
+        this.getLeavesAndBirthdaysFormatted = () => {
+            const leaves = this.state.total_leaves.value || 0
+            const birthdays = this.state.upcoming_birthdays.value || 0
+            return `${leaves} / ${birthdays}`
+        }
+
         this.onTotalLeavesClick = () => {
             const domain = []
             if (this.state.start_date) {
@@ -154,7 +174,7 @@ export class HRDashboard extends Component {
             }
             this.action.doAction({
                 type: "ir.actions.act_window",
-                name: "Leave Requests",
+                name: "Leave Requests & Birthdays",
                 res_model: "hr.leave",
                 views: [[false, "list"], [false, "form"]],
                 domain: domain,
@@ -198,6 +218,12 @@ export class HRDashboard extends Component {
             })
         }
 
+        this.getResignationsAndRetirementsFormatted = () => {
+            const resignations = this.state.total_resignations.value || 0
+            const retirements = this.state.upcoming_retirements.value || 0
+            return `${resignations} / ${retirements}`
+        }
+
         this.onTotalResignationsClick = () => {
             const domain = [["active", "=", false]]
             if (this.state.start_date) {
@@ -208,7 +234,7 @@ export class HRDashboard extends Component {
             }
             this.action.doAction({
                 type: "ir.actions.act_window",
-                name: "Resignations",
+                name: "Resignations & Retirements",
                 res_model: "hr.employee",
                 views: [[false, "list"], [false, "form"]],
                 domain: domain,
@@ -235,6 +261,11 @@ export class HRDashboard extends Component {
             this.getTotalAppraisals(),
             this.getTotalRecruitments(),
             this.getTotalResignations(),
+            this.getUpcomingRetirements(),
+            this.getUpcomingBirthdays(),
+            this.getQualificationChart(),
+            this.getGenderChart(),
+            this.getExperienceChart(),
             this.getEmployeeInventory(),
             this.getMonthlyPayroll(),
             this.getDepartmentHeadcount(),
@@ -392,6 +423,88 @@ export class HRDashboard extends Component {
             }
         } catch (error) {
             console.error("Error loading department headcount:", error)
+        }
+    }
+
+    async getUpcomingRetirements() {
+        try {
+            const retirementData = await this.orm.call(
+                "hr.employee",
+                "get_retirement_data",
+                [24]
+            )
+            this.state.upcoming_retirements.value = retirementData.count || 0
+        } catch (error) {
+            console.error("Error loading upcoming retirements:", error)
+            this.state.upcoming_retirements.value = 0
+        }
+    }
+
+    async getUpcomingBirthdays() {
+        try {
+            const birthdayData = await this.orm.call(
+                "hr.employee",
+                "get_birthday_notifications",
+                [30]
+            )
+            this.state.upcoming_birthdays.value = birthdayData.count || 0
+        } catch (error) {
+            console.error("Error loading upcoming birthdays:", error)
+            this.state.upcoming_birthdays.value = 0
+        }
+    }
+
+    async getQualificationChart() {
+        try {
+            const qualData = await this.orm.call(
+                "hr.employee",
+                "get_employees_by_qualification",
+                []
+            )
+            if (qualData && qualData.labels && qualData.datasets) {
+                this.state.qualification_chart = {
+                    labels: qualData.labels || [],
+                    datasets: qualData.datasets || [],
+                }
+            }
+        } catch (error) {
+            console.error("Error loading qualification chart:", error)
+        }
+    }
+
+    async getGenderChart() {
+        try {
+            const genderData = await this.orm.call(
+                "hr.employee",
+                "get_employees_by_gender",
+                []
+            )
+            if (genderData && genderData.labels && genderData.datasets) {
+                this.state.gender_chart = {
+                    labels: genderData.labels || [],
+                    datasets: genderData.datasets || [],
+                }
+            }
+        } catch (error) {
+            console.error("Error loading gender chart:", error)
+        }
+    }
+
+    async getExperienceChart() {
+        try {
+            const expData = await this.orm.call(
+                "hr.employee",
+                "get_employees_by_experience_level",
+                []
+            )
+            if (expData && expData.labels && expData.datasets) {
+                this.state.experience_chart = {
+                    labels: expData.labels || [],
+                    datasets: expData.datasets || [],
+                }
+            }
+        } catch (error) {
+            console.error("Error loading experience chart:", error)
         }
     }
 }
