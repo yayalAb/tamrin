@@ -550,116 +550,53 @@ class SaleOrder(models.Model):
             from collections import defaultdict
             _logger = logging.getLogger(__name__)
             
-            # Get all car sales (sale orders) that are confirmed
-            domain = [('state', 'in', ['sale', 'done'])]
-            
-            if start_date:
-                domain.append(('date_order', '>=', start_date))
-            if end_date:
-                domain.append(('date_order', '<=', end_date))
-            
-            orders = self.search(domain)
-            
             # Dictionary to store collections by month
             collection_forecast = defaultdict(float)
             
             today = datetime.now().date()
+            forecast_end = today + relativedelta(months=forecast_months)
             
-            for order in orders:
-                try:
-                    # Get related invoices
-                    invoices = self.env['account.move'].search([
-                        ('invoice_origin', '=', order.name),
-                        ('move_type', '=', 'out_invoice'),
-                        ('state', 'in', ['posted', 'draft'])
-                    ])
-                    
-                    if not invoices:
-                        # If no invoice yet, create expected invoice schedule from payment terms
-                        if order.payment_term_id:
-                            # Calculate payment schedule from payment terms
-                            amount_total = order.amount_total or 0.0
-                            payment_date = order.date_order.date() if order.date_order else today
-                            
-                            # Get payment term lines
-                            payment_term = order.payment_term_id
-                            if payment_term and payment_term.line_ids:
-                                for term_line in payment_term.line_ids.sorted('sequence'):
-                                    percent = term_line.percent or 0.0
-                                    if percent == 0:
-                                        continue
-                                    
-                                    amount = (amount_total * percent) / 100.0
-                                    due_days = term_line.days or 0
-                                    
-                                    # Calculate due date
-                                    if term_line.option == 'day_after_invoice_date':
-                                        due_date = payment_date + timedelta(days=due_days)
-                                    elif term_line.option == 'day_following_month':
-                                        # First day of following month + days
-                                        next_month = payment_date + relativedelta(months=1)
-                                        first_day = next_month.replace(day=1)
-                                        due_date = first_day + timedelta(days=due_days - 1)
-                                    elif term_line.option == 'day_current_month':
-                                        # Same month, specific day
-                                        due_date = payment_date.replace(day=min(due_days, 28))
-                                    else:
-                                        due_date = payment_date + timedelta(days=due_days)
-                                    
-                                    # Only include future dates
-                                    if due_date >= today:
-                                        month_key = due_date.strftime('%Y-%m')
-                                        collection_forecast[month_key] += amount
-                    # If invoices exist, we'll use invoice lines below (more accurate than payment term calculation)
-                
-                except Exception as e:
-                    _logger.warning("Error processing order %s for collection forecast: %s", order.name, str(e))
-                    continue
-            
-            # Use account.move.line (invoice payment lines) as the most accurate source
-            # This gives us the actual payment schedule from posted invoices
-            # Get invoices related to our orders first
-            order_invoice_origins = [order.name for order in orders]
-            
-            # Get all unpaid invoice lines from posted invoices related to our orders
-            invoice_lines = self.env['account.move.line'].search([
-                ('move_id.move_type', '=', 'out_invoice'),
-                ('move_id.state', '=', 'posted'),
-                ('account_id.internal_type', '=', 'receivable'),
-                ('reconciled', '=', False),
+            # Get all unpaid invoices (customer invoices) with residual amounts
+            # This is the most accurate source for collection forecasts
+            invoices = self.env['account.move'].search([
+                ('move_type', '=', 'out_invoice'),
+                ('state', '=', 'posted'),
+                ('payment_state', 'in', ['not_paid', 'partial']),
+                ('amount_residual', '>', 0),
             ])
             
-            for line in invoice_lines:
+            _logger.info("Found %d unpaid invoices for collection forecast", len(invoices))
+            
+            for invoice in invoices:
                 try:
-                    invoice = line.move_id
-                    # Check if this invoice is related to our orders
-                    invoice_origin = invoice.invoice_origin or ''
-                    
-                    # Include if it's from our orders, or if no date filter and it's a car sale
-                    include_line = False
-                    if invoice_origin and any(invoice_origin.startswith(origin) for origin in order_invoice_origins):
-                        include_line = True
-                    elif not start_date and not end_date:
-                        # If no date filter, include all unpaid invoices (could be car sales)
-                        include_line = True
-                    
-                    if not include_line:
-                        continue
-                    
-                    amount = abs(line.amount_residual) if line.amount_residual != 0 else abs(line.balance)
+                    amount = abs(invoice.amount_residual) or 0.0
                     if amount <= 0:
                         continue
                     
-                    due_date = line.date_maturity or invoice.invoice_date_due
+                    # Get due date from invoice
+                    due_date = invoice.invoice_date_due
                     if not due_date:
+                        # If no due date, use invoice date + payment terms or skip
                         continue
                     
-                    forecast_end = today + relativedelta(months=forecast_months)
+                    # Convert to date if it's a datetime
+                    if isinstance(due_date, datetime):
+                        due_date = due_date.date()
+                    
+                    # Only include dates within the forecast period
                     if due_date >= today and due_date <= forecast_end:
                         month_key = due_date.strftime('%Y-%m')
                         collection_forecast[month_key] += amount
+                        _logger.debug("Added collection: %s on %s (month: %s) from invoice %s", 
+                                    amount, due_date, month_key, invoice.name)
+                    elif due_date < today:
+                        # Past due collections - add to current month
+                        month_key = today.strftime('%Y-%m')
+                        collection_forecast[month_key] += amount
+                        _logger.debug("Added past due collection: %s on %s (month: %s) from invoice %s", 
+                                    amount, due_date, month_key, invoice.name)
                 except Exception as e:
-                    _logger.warning("Error processing invoice line for collection forecast: %s", str(e))
+                    _logger.warning("Error processing invoice %s for collection forecast: %s", invoice.name, str(e))
                     continue
             
             # Generate labels and data for the next N months
